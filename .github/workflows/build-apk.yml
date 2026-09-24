@@ -1,0 +1,270 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Create Android project
+        run: |
+          mkdir -p app/src/main/java/com/aifootball/analyzer
+
+          cat > settings.gradle <<'EOF'
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          rootProject.name = "AIFootballAnalyzer"
+          include(":app")
+          EOF
+
+          cat > build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF
+
+          cat > app/build.gradle <<'EOF'
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.aifootball.analyzer'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId "com.aifootball.analyzer"
+                  minSdk 23
+                  targetSdk 35
+                  versionCode 1
+                  versionName "0.1"
+              }
+          }
+          EOF
+
+          cat > app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <application
+                  android:theme="@style/AppTheme"
+                  android:label="AI足球数据分析">
+                  <activity
+                      android:name=".MainActivity"
+                      android:screenOrientation="portrait"
+                      android:exported="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          mkdir -p app/src/main/res/values
+
+          cat > app/src/main/res/values/styles.xml <<'EOF'
+          <resources>
+              <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+                  <item name="android:fontFamily">sans</item>
+                  <item name="android:colorAccent">#1769E0</item>
+                  <item name="android:navigationBarColor">#FFFFFF</item>
+                  <item name="android:statusBarColor">#0E3A70</item>
+              </style>
+          </resources>
+          EOF
+
+          cat > app/src/main/java/com/aifootball/analyzer/MainActivity.java <<'EOF'
+          package com.aifootball.analyzer;
+
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.graphics.Color;
+          import android.graphics.Typeface;
+          import android.view.Gravity;
+          import android.view.View;
+          import android.widget.*;
+
+          public class MainActivity extends Activity {
+
+              private TextView result;
+
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  ScrollView scroll = new ScrollView(this);
+                  LinearLayout root = new LinearLayout(this);
+                  root.setOrientation(LinearLayout.VERTICAL);
+                  root.setPadding(42, 42, 42, 42);
+                  root.setBackgroundColor(Color.rgb(247, 250, 253));
+                  scroll.addView(root);
+
+                  TextView title = new TextView(this);
+                  title.setText("AI足球数据分析");
+                  title.setTextSize(27);
+                  title.setTextColor(Color.rgb(14, 58, 112));
+                  title.setTypeface(null, Typeface.BOLD);
+                  root.addView(title);
+
+                  TextView sub = new TextView(this);
+                  sub.setText("比赛数据研究 · Android 测试版");
+                  sub.setTextSize(15);
+                  sub.setTextColor(Color.DKGRAY);
+                  sub.setPadding(0, 8, 0, 35);
+                  root.addView(sub);
+
+                  EditText home = input("主队名称");
+                  EditText away = input("客队名称");
+                  root.addView(home);
+                  root.addView(away);
+
+                  Spinner theory = spinner(new String[]{
+                          "理论盘：平手",
+                          "理论盘：主让0.25",
+                          "理论盘：主让0.5",
+                          "理论盘：主让0.75",
+                          "理论盘：主让1"
+                  });
+
+                  Spinner market = spinner(new String[]{
+                          "即时盘：平手",
+                          "即时盘：主让0.25",
+                          "即时盘：主让0.5",
+                          "即时盘：主让0.75",
+                          "即时盘：主让1"
+                  });
+
+                  root.addView(theory);
+                  root.addView(market);
+
+                  Button button = new Button(this);
+                  button.setText("生成分析");
+                  LinearLayout.LayoutParams bp = new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, 150);
+                  bp.setMargins(0, 30, 0, 25);
+                  root.addView(button, bp);
+
+                  result = new TextView(this);
+                  result.setText(
+                          "录入比赛信息后点击“生成分析”。\n\n" +
+                          "当前版本用于验证 APK 安装、启动和基础分析流程。"
+                  );
+                  result.setTextSize(17);
+                  result.setTextColor(Color.rgb(30, 45, 60));
+                  result.setPadding(28, 28, 28, 28);
+                  result.setBackgroundColor(Color.WHITE);
+                  root.addView(result);
+
+                  button.setOnClickListener(v -> {
+                      String h = home.getText().toString().trim();
+                      String a = away.getText().toString().trim();
+
+                      if (h.isEmpty()) h = "主队";
+                      if (a.isEmpty()) a = "客队";
+
+                      int t = theory.getSelectedItemPosition();
+                      int m = market.getSelectedItemPosition();
+                      int d = t - m;
+
+                      String pricing;
+                      if (d > 0) {
+                          pricing = "市场对主队定价低于模型理论位置";
+                      } else if (d < 0) {
+                          pricing = "市场对主队定价高于模型理论位置";
+                      } else {
+                          pricing = "市场盘口与模型理论位置基本一致";
+                      }
+
+                      result.setText(
+                              h + "  vs  " + a + "\n\n" +
+                              "【模型分析】\n" +
+                              pricing + "\n\n" +
+                              "理论盘口：" +
+                              theory.getSelectedItem().toString()
+                                      .replace("理论盘：", "") + "\n" +
+                              "市场盘口：" +
+                              market.getSelectedItem().toString()
+                                      .replace("即时盘：", "") + "\n\n" +
+                              "当前为商业版 APK 的功能验证版本。"
+                      );
+                  });
+
+                  setContentView(scroll);
+              }
+
+              private EditText input(String hint) {
+                  EditText e = new EditText(this);
+                  e.setHint(hint);
+                  e.setTextSize(17);
+                  e.setSingleLine(true);
+                  e.setBackgroundColor(Color.WHITE);
+                  e.setPadding(25, 8, 25, 8);
+
+                  LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, 145);
+                  p.setMargins(0, 10, 0, 10);
+                  e.setLayoutParams(p);
+
+                  return e;
+              }
+
+              private Spinner spinner(String[] values) {
+                  Spinner s = new Spinner(this);
+                  ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                          this,
+                          android.R.layout.simple_spinner_dropdown_item,
+                          values
+                  );
+                  s.setAdapter(adapter);
+
+                  LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+                          LinearLayout.LayoutParams.MATCH_PARENT, 135);
+                  p.setMargins(0, 10, 0, 10);
+                  s.setLayoutParams(p);
+
+                  return s;
+              }
+          }
+          EOF
+
+      - name: Build APK
+        run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Football-Analyzer-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
