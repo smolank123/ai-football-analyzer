@@ -160,4 +160,605 @@ button{
 
   <div id="adminCard" class="card hide">
     <span class="tag admin">ADMIN</span>
-    <h2>管理员
+    <h2>管理员后台</h2>
+
+    <p>
+      当前账号拥有管理员权限。
+    </p>
+
+    <button onclick="adminTest()">
+      进入管理后台
+    </button>
+
+    <p class="small">
+      下一版本将接入比赛发布、报告管理、会员管理。
+    </p>
+  </div>
+
+
+  <div class="card">
+    <span class="tag">今日研究</span>
+    <h2>比赛中心</h2>
+
+    <div class="match">
+      <span class="tag">免费</span>
+      <h3>荷兰 vs 德国</h3>
+
+      <p>
+        球队定位、近期表现、阵容情况与比赛结构综合研究。
+      </p>
+
+      <button class="alt" onclick="showFreeReport()">
+        查看分析
+      </button>
+    </div>
+
+
+    <div class="match">
+      <span class="tag vip">VIP</span>
+      <h3>葡萄牙 vs 威尔士</h3>
+
+      <p>会员完整比赛研究报告</p>
+
+      <button onclick="showVipReport()">
+        查看会员报告
+      </button>
+    </div>
+  </div>
+
+
+  <div class="card">
+    <span id="memberBadge" class="tag vip">MEMBER</span>
+    <h2>会员中心</h2>
+
+    <div class="userbox">
+      <div class="small">当前登录账号</div>
+      <strong id="userEmail">-</strong>
+    </div>
+
+    <p>
+      会员状态：
+      <strong id="memberStatus">读取中...</strong>
+    </p>
+
+    <p class="small" id="expireText"></p>
+
+    <div id="debugBox" class="debug"></div>
+
+    <button class="alt" onclick="logout()">
+      退出登录
+    </button>
+  </div>
+
+</div>
+
+<div class="bottom">
+  AI Football Data Lab · Web Cloud Test
+</div>
+
+</div>
+
+
+<script>
+
+const SUPABASE_URL =
+  "https://cfnihjzionwfucugmlxo.supabase.co";
+
+const SUPABASE_KEY =
+  "sb_publishable_rKDo5BVwSlIkUw1cZniIMQ_I38umzbb";
+
+const client =
+  window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+let registerMode = false;
+let currentProfile = null;
+
+
+function switchMode(){
+
+  registerMode = !registerMode;
+
+  const message =
+    document.getElementById("message");
+
+  message.className = "status";
+  message.innerText = "";
+
+  if(registerMode){
+
+    document.getElementById("authTitle")
+      .innerText = "注册账号";
+
+    document.getElementById("mainBtn")
+      .innerText = "注册";
+
+    document.getElementById("switchText")
+      .innerText = "已有账号？返回登录";
+
+  }else{
+
+    document.getElementById("authTitle")
+      .innerText = "会员登录";
+
+    document.getElementById("mainBtn")
+      .innerText = "登录";
+
+    document.getElementById("switchText")
+      .innerText = "没有账号？注册账号";
+  }
+}
+
+
+function showMessage(text,type){
+
+  const box =
+    document.getElementById("message");
+
+  box.innerText = text;
+  box.className = "status " + type;
+}
+
+
+async function handleAuth(){
+
+  const email =
+    document.getElementById("email")
+      .value.trim();
+
+  const password =
+    document.getElementById("password")
+      .value;
+
+  if(!email){
+    showMessage("请输入邮箱。","error");
+    return;
+  }
+
+  if(password.length < 6){
+    showMessage("密码至少需要6位。","error");
+    return;
+  }
+
+  const btn =
+    document.getElementById("mainBtn");
+
+  btn.disabled = true;
+  btn.innerText = "处理中...";
+
+  try{
+
+    if(registerMode){
+
+      const {data,error} =
+        await client.auth.signUp({
+          email,
+          password
+        });
+
+      if(error){
+        showMessage(
+          "注册失败：" + error.message,
+          "error"
+        );
+      }else if(data.session){
+
+        await openMemberPage(
+          data.session.user
+        );
+
+      }else{
+
+        showMessage(
+          "注册成功，请检查邮箱完成验证。",
+          "success"
+        );
+      }
+
+    }else{
+
+      const {data,error} =
+        await client.auth.signInWithPassword({
+          email,
+          password
+        });
+
+      if(error){
+
+        showMessage(
+          "登录失败：" + error.message,
+          "error"
+        );
+
+      }else{
+
+        await openMemberPage(
+          data.user
+        );
+      }
+    }
+
+  }catch(err){
+
+    showMessage(
+      "系统错误：" + err.message,
+      "error"
+    );
+
+  }finally{
+
+    btn.disabled = false;
+    btn.innerText =
+      registerMode ? "注册" : "登录";
+  }
+}
+
+
+async function openMemberPage(user){
+
+  document.getElementById("authPage")
+    .classList.add("hide");
+
+  document.getElementById("memberPage")
+    .classList.remove("hide");
+
+  document.getElementById("userEmail")
+    .innerText =
+      user.email || "会员";
+
+  document.getElementById("memberStatus")
+    .innerText = "正在读取云端资料...";
+
+  await loadProfile(user);
+}
+
+
+async function loadProfile(user){
+
+  const status =
+    document.getElementById("memberStatus");
+
+  const expire =
+    document.getElementById("expireText");
+
+  const debug =
+    document.getElementById("debugBox");
+
+  const adminCard =
+    document.getElementById("adminCard");
+
+  const badge =
+    document.getElementById("memberBadge");
+
+  debug.style.display = "none";
+  debug.innerText = "";
+
+  adminCard.classList.add("hide");
+
+  try{
+
+    /*
+      先通过当前登录用户 UUID
+      读取自己的 profiles 数据
+    */
+
+    const {data,error} =
+      await client
+        .from("profiles")
+        .select(
+          "id,email,role,membership_level,membership_expires_at"
+        )
+        .eq("id",user.id)
+        .maybeSingle();
+
+
+    if(error){
+
+      status.innerText = "资料读取失败";
+
+      expire.innerText =
+        "数据库返回了错误，请查看下方诊断信息。";
+
+      debug.style.display = "block";
+
+      debug.innerText =
+        "Supabase错误：" +
+        error.message +
+        " | code=" +
+        (error.code || "unknown") +
+        " | user=" +
+        user.id;
+
+      return;
+    }
+
+
+    if(!data){
+
+      status.innerText = "资料不存在";
+
+      expire.innerText =
+        "登录成功，但 profiles 中没有找到当前用户。";
+
+      debug.style.display = "block";
+
+      debug.innerText =
+        "当前用户 UUID：" +
+        user.id;
+
+      return;
+    }
+
+
+    currentProfile = data;
+
+    const role =
+      String(data.role || "user")
+        .trim()
+        .toLowerCase();
+
+    const level =
+      String(
+        data.membership_level || "free"
+      )
+        .trim()
+        .toLowerCase();
+
+    const expires =
+      data.membership_expires_at
+        ? new Date(
+            data.membership_expires_at
+          )
+        : null;
+
+
+    /*
+      管理员优先级最高
+    */
+
+    if(role === "admin"){
+
+      status.innerText = "管理员";
+
+      badge.innerText = "ADMIN";
+      badge.className = "tag admin";
+
+      adminCard.classList.remove("hide");
+
+      expire.innerText =
+        "管理员账号 · 已拥有完整访问权限";
+
+      return;
+    }
+
+
+    /*
+      判断 VIP 是否有效
+    */
+
+    const vipActive =
+      level === "vip" &&
+      (
+        !expires ||
+        expires > new Date()
+      );
+
+
+    if(vipActive){
+
+      status.innerText = "VIP会员";
+
+      badge.innerText = "VIP";
+      badge.className = "tag vip";
+
+      if(expires){
+
+        expire.innerText =
+          "会员有效期至：" +
+          expires.toLocaleString();
+
+      }else{
+
+        expire.innerText =
+          "VIP会员 · 长期有效";
+      }
+
+      return;
+    }
+
+
+    /*
+      普通会员
+    */
+
+    status.innerText = "普通会员";
+
+    badge.innerText = "MEMBER";
+    badge.className = "tag";
+
+    if(expires){
+
+      expire.innerText =
+        "会员有效期已结束：" +
+        expires.toLocaleString();
+
+    }else{
+
+      expire.innerText =
+        "当前为基础会员账号。";
+    }
+
+
+  }catch(err){
+
+    status.innerText = "读取异常";
+
+    debug.style.display = "block";
+
+    debug.innerText =
+      "程序异常：" + err.message;
+  }
+}
+
+
+function showFreeReport(){
+
+  alert(
+    "免费研究报告示例：球队定位、近期比赛内容、阵容稳定度及比赛结构综合研究。"
+  );
+}
+
+
+async function showVipReport(){
+
+  if(!currentProfile){
+
+    alert(
+      "会员资料尚未读取完成。"
+    );
+
+    return;
+  }
+
+
+  const role =
+    String(
+      currentProfile.role || "user"
+    ).toLowerCase();
+
+
+  const level =
+    String(
+      currentProfile.membership_level ||
+      "free"
+    ).toLowerCase();
+
+
+  if(role === "admin"){
+
+    alert(
+      "管理员权限验证成功。可以查看完整会员报告。"
+    );
+
+    return;
+  }
+
+
+  const expires =
+    currentProfile.membership_expires_at
+      ? new Date(
+          currentProfile.membership_expires_at
+        )
+      : null;
+
+
+  const active =
+    level === "vip" &&
+    (
+      !expires ||
+      expires > new Date()
+    );
+
+
+  if(active){
+
+    alert(
+      "VIP权限验证成功。后续这里将显示完整比赛研究报告。"
+    );
+
+  }else{
+
+    alert(
+      "该内容仅向有效会员开放。"
+    );
+  }
+}
+
+
+function adminTest(){
+
+  if(
+    currentProfile &&
+    String(
+      currentProfile.role
+    ).toLowerCase() === "admin"
+  ){
+
+    alert(
+      "管理员身份验证成功。下一步接入正式管理后台。"
+    );
+
+  }else{
+
+    alert(
+      "当前账号没有管理员权限。"
+    );
+  }
+}
+
+
+async function logout(){
+
+  await client.auth.signOut();
+
+  currentProfile = null;
+
+  document.getElementById("memberPage")
+    .classList.add("hide");
+
+  document.getElementById("authPage")
+    .classList.remove("hide");
+
+  document.getElementById("password")
+    .value = "";
+}
+
+
+async function init(){
+
+  const {
+    data:{session},
+    error
+  } =
+    await client.auth.getSession();
+
+
+  if(error){
+    return;
+  }
+
+
+  if(session && session.user){
+
+    await openMemberPage(
+      session.user
+    );
+  }
+}
+
+
+client.auth.onAuthStateChange(
+  (event,session)=>{
+
+    if(event === "SIGNED_OUT"){
+
+      currentProfile = null;
+
+      document.getElementById("memberPage")
+        .classList.add("hide");
+
+      document.getElementById("authPage")
+        .classList.remove("hide");
+    }
+  }
+);
+
+
+init();
+
+</script>
+
+</body>
+</html>
