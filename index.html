@@ -4,23 +4,149 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>AI足球数据分析</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f4f7fb;color:#13243b}
-.hero{padding:30px 22px 65px;background:linear-gradient(135deg,#083d7f,#087df0);color:white}
-.hero h1{font-size:30px;margin:10px 0}
-.wrap{max-width:700px;margin:-35px auto 70px;padding:0 15px}
-.card{background:white;border-radius:22px;padding:22px;margin:14px 0;box-shadow:0 8px 25px #17365b18}
-.tag{display:inline-block;background:#eaf4ff;color:#1268b8;padding:6px 10px;border-radius:20px;font-weight:bold}
-.vip{background:#fff3d3;color:#946100}
-input{width:100%;padding:15px;margin:7px 0;border:1px solid #ddd;border-radius:13px;font-size:16px}
-button{width:100%;padding:15px;margin-top:10px;border:0;border-radius:13px;background:#126ed7;color:white;font-size:16px;font-weight:bold}
-.alt{background:#eaf3ff;color:#1264aa}
-.match{border:1px solid #e2e8ef;border-radius:16px;padding:16px;margin-top:13px}
-.hide{display:none}
-.small{font-size:13px;color:#778397}
+
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Arial,sans-serif;
+background:#f4f7fb;
+color:#13243b;
+}
+
+.hero{
+padding:32px 22px 68px;
+background:linear-gradient(135deg,#083d7f,#087df0);
+color:#fff;
+}
+
+.hero h1{
+font-size:30px;
+margin:10px 0;
+}
+
+.wrap{
+max-width:700px;
+margin:-38px auto 70px;
+padding:0 15px;
+}
+
+.card{
+background:#fff;
+border-radius:22px;
+padding:22px;
+margin:14px 0;
+box-shadow:0 8px 28px rgba(23,54,91,.10);
+}
+
+.tag{
+display:inline-block;
+background:#eaf4ff;
+color:#1268b8;
+padding:6px 11px;
+border-radius:20px;
+font-size:13px;
+font-weight:700;
+}
+
+.vip{
+background:#fff3d3;
+color:#946100;
+}
+
+h2{
+font-size:25px;
+margin:16px 0;
+}
+
+input{
+width:100%;
+padding:15px;
+margin:7px 0;
+border:1px solid #dce4ed;
+border-radius:13px;
+font-size:16px;
+outline:none;
+}
+
+input:focus{
+border-color:#1477df;
+}
+
+button{
+width:100%;
+padding:15px;
+margin-top:10px;
+border:0;
+border-radius:13px;
+background:#126ed7;
+color:#fff;
+font-size:16px;
+font-weight:700;
+cursor:pointer;
+}
+
+.alt{
+background:#eaf3ff;
+color:#1264aa;
+}
+
+.match{
+border:1px solid #e2e8ef;
+border-radius:16px;
+padding:16px;
+margin-top:13px;
+}
+
+.small{
+font-size:13px;
+color:#778397;
+line-height:1.7;
+}
+
+.status{
+padding:12px;
+border-radius:12px;
+margin-top:12px;
+font-size:14px;
+display:none;
+}
+
+.success{
+display:block;
+background:#eaf8ef;
+color:#237844;
+}
+
+.error{
+display:block;
+background:#fff0f0;
+color:#b12c2c;
+}
+
+.hide{
+display:none;
+}
+
+.userbox{
+background:#f5f9ff;
+border-radius:14px;
+padding:14px;
+margin:14px 0;
+}
+
+.bottom{
+text-align:center;
+font-size:12px;
+color:#8a96a6;
+padding:15px;
+}
 </style>
 </head>
+
 <body>
 
 <div class="hero">
@@ -31,27 +157,620 @@ button{width:100%;padding:15px;margin-top:10px;border:0;border-radius:13px;backg
 
 <div class="wrap">
 
-<div id="login" class="card">
+<!-- 登录注册 -->
+<div id="authPage" class="card">
+
 <span class="tag">会员系统</span>
-<h2>登录</h2>
-<input id="user" placeholder="会员账号">
-<input id="pass" type="password" placeholder="密码">
-<button onclick="login()">登录</button>
-<p class="small">AI足球数据分析商业测试版</p>
+
+<h2 id="authTitle">会员登录</h2>
+
+<input
+id="email"
+type="email"
+placeholder="请输入邮箱"
+autocomplete="email"
+>
+
+<input
+id="password"
+type="password"
+placeholder="请输入密码（至少6位）"
+autocomplete="current-password"
+>
+
+<button id="mainBtn" onclick="handleAuth()">
+登录
+</button>
+
+<button class="alt" onclick="switchMode()">
+<span id="switchText">没有账号？注册账号</span>
+</button>
+
+<div id="message" class="status"></div>
+
+<p class="small">
+账号数据已连接云端。测试阶段暂时使用邮箱注册登录。
+</p>
+
 </div>
 
-<div id="home" class="hide">
+
+<!-- 登录后的主页 -->
+<div id="memberPage" class="hide">
 
 <div class="card">
+
 <span class="tag">今日研究</span>
-<h2>比赛列表</h2>
+
+<h2>比赛中心</h2>
 
 <div class="match">
+
 <span class="tag">免费</span>
+
 <h3>荷兰 vs 德国</h3>
-<p>球队定位、近期表现、阵容及比赛结构综合研究。</p>
-<button class="alt" onclick="alert('免费研究报告示例')">查看分析</button>
+
+<p>
+球队定位、近期表现、阵容情况与比赛结构综合研究。
+</p>
+
+<button class="alt" onclick="showFreeReport()">
+查看分析
+</button>
+
 </div>
 
+
 <div class="match">
-<span class="tag vip">VIP</
+
+<span class="tag vip">VIP</span>
+
+<h3>葡萄牙 vs 威尔士</h3>
+
+<p>
+会员完整比赛研究报告
+</p>
+
+<button onclick="showVipReport()">
+查看会员报告
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<span class="tag vip">MEMBER</span>
+
+<h2>会员中心</h2>
+
+<div class="userbox">
+
+<div class="small">当前登录账号</div>
+
+<strong id="userEmail">
+-
+</strong>
+
+</div>
+
+<p>
+会员状态：
+<strong id="memberStatus">读取中...</strong>
+</p>
+
+<p class="small" id="expireText"></p>
+
+<button class="alt" onclick="logout()">
+退出登录
+</button>
+
+</div>
+
+</div>
+
+<div class="bottom">
+AI Football Data Lab · Web Cloud Test
+</div>
+
+</div>
+
+
+<script>
+
+/* ==========================
+   Supabase 配置
+========================== */
+
+const SUPABASE_URL =
+"https://cfnihjzionwfucugmlxo.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_rKDo5BVwSlIkUw1cZniIMQ_I38umzbb";
+
+const client =
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
+
+
+/* ==========================
+   页面状态
+========================== */
+
+let registerMode = false;
+
+function switchMode(){
+
+registerMode = !registerMode;
+
+document.getElementById("message").className =
+"status";
+
+document.getElementById("message").innerText =
+"";
+
+if(registerMode){
+
+document.getElementById("authTitle").innerText =
+"注册账号";
+
+document.getElementById("mainBtn").innerText =
+"注册";
+
+document.getElementById("switchText").innerText =
+"已有账号？返回登录";
+
+}else{
+
+document.getElementById("authTitle").innerText =
+"会员登录";
+
+document.getElementById("mainBtn").innerText =
+"登录";
+
+document.getElementById("switchText").innerText =
+"没有账号？注册账号";
+
+}
+
+}
+
+
+/* ==========================
+   提示信息
+========================== */
+
+function showMessage(text,type){
+
+const box =
+document.getElementById("message");
+
+box.innerText = text;
+
+box.className =
+"status " + type;
+
+}
+
+
+/* ==========================
+   登录 / 注册
+========================== */
+
+async function handleAuth(){
+
+const email =
+document.getElementById("email")
+.value.trim();
+
+const password =
+document.getElementById("password")
+.value;
+
+if(!email){
+
+showMessage(
+"请输入邮箱。",
+"error"
+);
+
+return;
+
+}
+
+if(password.length < 6){
+
+showMessage(
+"密码至少需要6位。",
+"error"
+);
+
+return;
+
+}
+
+document.getElementById("mainBtn").disabled =
+true;
+
+document.getElementById("mainBtn").innerText =
+"处理中...";
+
+
+if(registerMode){
+
+const {data,error} =
+await client.auth.signUp({
+
+email:email,
+
+password:password,
+
+options:{
+
+data:{
+username:
+email.split("@")[0]
+}
+
+}
+
+});
+
+
+if(error){
+
+showMessage(
+"注册失败：" + error.message,
+"error"
+);
+
+}else{
+
+if(data.session){
+
+showMessage(
+"注册成功。",
+"success"
+);
+
+await openMemberPage(
+data.session.user
+);
+
+}else{
+
+showMessage(
+"注册成功。请检查邮箱并完成验证，然后返回登录。",
+"success"
+);
+
+}
+
+}
+
+}else{
+
+const {data,error} =
+await client.auth.signInWithPassword({
+
+email:email,
+
+password:password
+
+});
+
+
+if(error){
+
+showMessage(
+"登录失败，请检查账号或密码。",
+"error"
+);
+
+}else{
+
+await openMemberPage(
+data.user
+);
+
+}
+
+}
+
+
+document.getElementById("mainBtn").disabled =
+false;
+
+document.getElementById("mainBtn").innerText =
+registerMode ? "注册" : "登录";
+
+}
+
+
+/* ==========================
+   打开会员页面
+========================== */
+
+async function openMemberPage(user){
+
+document.getElementById("authPage")
+.classList.add("hide");
+
+document.getElementById("memberPage")
+.classList.remove("hide");
+
+document.getElementById("userEmail")
+.innerText =
+user.email || "会员";
+
+
+await loadProfile(user.id);
+
+}
+
+
+/* ==========================
+   获取会员资料
+========================== */
+
+async function loadProfile(userId){
+
+const status =
+document.getElementById("memberStatus");
+
+const expire =
+document.getElementById("expireText");
+
+
+const {data,error} =
+await client
+
+.from("profiles")
+
+.select(
+"membership_level,membership_expires_at,role"
+)
+
+.eq("id",userId)
+
+.single();
+
+
+if(error || !data){
+
+status.innerText =
+"普通会员";
+
+expire.innerText =
+"会员资料正在初始化。";
+
+return;
+
+}
+
+
+const now =
+new Date();
+
+const expires =
+data.membership_expires_at
+? new Date(data.membership_expires_at)
+: null;
+
+
+const active =
+data.membership_level !== "free"
+&&
+(
+!expires ||
+expires > now
+);
+
+
+if(data.role === "admin"){
+
+status.innerText =
+"管理员";
+
+}else if(active){
+
+status.innerText =
+"VIP会员";
+
+}else{
+
+status.innerText =
+"普通会员";
+
+}
+
+
+if(expires){
+
+expire.innerText =
+"有效期至：" +
+expires.toLocaleString();
+
+}else{
+
+expire.innerText =
+"";
+
+}
+
+}
+
+
+/* ==========================
+   示例报告
+========================== */
+
+function showFreeReport(){
+
+alert(
+"免费研究报告示例：球队定位、近期比赛内容、阵容稳定度及比赛结构综合研究。"
+);
+
+}
+
+
+async function showVipReport(){
+
+const {
+data:{user}
+} =
+await client.auth.getUser();
+
+
+if(!user){
+
+alert(
+"请先登录。"
+);
+
+return;
+
+}
+
+
+const {data} =
+await client
+
+.from("profiles")
+
+.select(
+"membership_level,membership_expires_at,role"
+)
+
+.eq("id",user.id)
+
+.single();
+
+
+if(!data){
+
+alert(
+"暂未获取到会员资料。"
+);
+
+return;
+
+}
+
+
+if(data.role === "admin"){
+
+alert(
+"管理员可查看完整会员报告。"
+);
+
+return;
+
+}
+
+
+const expires =
+data.membership_expires_at
+? new Date(data.membership_expires_at)
+: null;
+
+
+const active =
+data.membership_level !== "free"
+&&
+(
+!expires ||
+expires > new Date()
+);
+
+
+if(!active){
+
+alert(
+"该内容为会员报告，当前账号暂无有效会员权限。"
+);
+
+return;
+
+}
+
+
+alert(
+"VIP完整研究报告示例：后续这里将读取云端发布的比赛分析内容。"
+);
+
+}
+
+
+/* ==========================
+   退出登录
+========================== */
+
+async function logout(){
+
+await client.auth.signOut();
+
+document.getElementById("memberPage")
+.classList.add("hide");
+
+document.getElementById("authPage")
+.classList.remove("hide");
+
+document.getElementById("password").value =
+"";
+
+}
+
+
+/* ==========================
+   自动恢复登录状态
+========================== */
+
+async function init(){
+
+const {
+data:{session}
+} =
+await client.auth.getSession();
+
+
+if(session){
+
+await openMemberPage(
+session.user
+);
+
+}
+
+}
+
+
+client.auth.onAuthStateChange(
+(event,session)=>{
+
+if(
+event === "SIGNED_OUT"
+){
+
+document.getElementById("memberPage")
+.classList.add("hide");
+
+document.getElementById("authPage")
+.classList.remove("hide");
+
+}
+
+}
+);
+
+
+init();
+
+</script>
+
+</body>
+</html>
