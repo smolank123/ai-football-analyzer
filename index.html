@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI足球数据分析</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,"Microsoft YaHei",sans-serif;background:#f4f7fb;color:#13243b}
+.hero{padding:30px 22px 65px;background:linear-gradient(135deg,#083d7f,#087df0);color:white}
+.hero h1{font-size:30px;margin:10px 0}
+.wrap{max-width:700px;margin:-35px auto 70px;padding:0 15px}
+.card{background:white;border-radius:22px;padding:22px;margin:14px 0;box-shadow:0 8px 25px #17365b18}
+.tag{display:inline-block;background:#eaf4ff;color:#1268b8;padding:6px 10px;border-radius:20px;font-weight:bold}
+.vip{background:#fff3d3;color:#946100}
+input{width:100%;padding:15px;margin:7px 0;border:1px solid #ddd;border-radius:13px;font-size:16px}
+button{width:100%;padding:15px;margin-top:10px;border:0;border-radius:13px;background:#126ed7;color:white;font-size:16px;font-weight:bold}
+.alt{background:#eaf3ff;color:#1264aa}
+.match{border:1px solid #e2e8ef;border-radius:16px;padding:16px;margin-top:13px}
+.hide{display:none}
+.small{font-size:13px;color:#778397}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<small>AI FOOTBALL DATA LAB · ONLINE</small>
+<h1>AI足球数据分析</h1>
+<div>比赛研究 · 数据分析 · 会员报告</div>
+</div>
+
+<div class="wrap">
+
+<div id="login" class="card">
+<span class="tag">会员系统</span>
+<h2>登录</h2>
+<input id="user" placeholder="会员账号">
+<input id="pass" type="password" placeholder="密码">
+<button onclick="login()">登录</button>
+<p class="small">AI足球数据分析商业测试版</p>
+</div>
+
+<div id="home" class="hide">
+
+<div class="card">
+<span class="tag">今日研究</span>
+<h2>比赛列表</h2>
+
+<div class="match">
+<span class="tag">免费</span>
+<h3>荷兰 vs 德国</h3>
+<p>球队定位、近期表现、阵容及比赛结构综合研究。</p>
+<button class="alt" onclick="alert('免费研究报告示例')">查看分析</button>
+</div>
+
+<div class="match">
+<span class="tag vip">VIP</
