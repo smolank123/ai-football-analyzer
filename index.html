@@ -42,7 +42,8 @@ font-size:15px;background:#fff
 textarea{min-height:105px;resize:vertical}
 button{
 width:100%;padding:14px;margin-top:9px;border:0;border-radius:12px;
-background:#126ed7;color:#fff;font-size:15px;font-weight:700
+background:#126ed7;color:#fff;font-size:15px;font-weight:700;
+cursor:pointer
 }
 .alt{background:#eaf3ff;color:#1264aa}
 .danger{background:#fff0f0;color:#b52d2d}
@@ -54,7 +55,8 @@ border:1px solid #e2e8ef;border-radius:15px;padding:15px;margin-top:12px
 }
 .row{display:grid;grid-template-columns:1fr 1fr;gap:9px}
 .status{
-padding:11px;border-radius:11px;margin-top:10px;font-size:13px;display:none
+padding:11px;border-radius:11px;margin-top:10px;
+font-size:13px;display:none;line-height:1.6
 }
 .success{display:block;background:#eaf8ef;color:#237844}
 .error{display:block;background:#fff0f0;color:#b12c2c}
@@ -63,28 +65,33 @@ padding:11px;border-radius:11px;margin-top:10px;font-size:13px;display:none
 white-space:pre-wrap;line-height:1.8;background:#f8fafc;
 padding:14px;border-radius:12px;margin-top:10px
 }
-.nav{
-display:flex;gap:7px;overflow:auto;margin-bottom:12px
-}
+.nav{display:flex;gap:7px;overflow:auto;margin-bottom:12px}
 .nav button{
 min-width:100px;width:auto;padding:10px 14px;margin:0
 }
 .bottom{text-align:center;font-size:11px;color:#8995a5;padding:15px}
 hr{border:0;border-top:1px solid #edf0f4;margin:18px 0}
+.editing{
+background:#fff8e5;
+border:1px solid #f3d68a;
+padding:12px;
+border-radius:12px;
+margin-bottom:14px;
+font-size:13px
+}
 </style>
 </head>
 
 <body>
 
 <div class="hero">
-<small>AI FOOTBALL DATA LAB · Web v0.3</small>
+<small>AI FOOTBALL DATA LAB · Web v0.3.1</small>
 <h1>AI足球数据分析</h1>
 <div>比赛研究 · 模型报告 · 会员服务</div>
 </div>
 
 <div class="wrap">
 
-<!-- 登录 -->
 <section id="authPage" class="card">
 <span class="tag">会员系统</span>
 <h2 id="authTitle">会员登录</h2>
@@ -102,44 +109,56 @@ hr{border:0;border-top:1px solid #edf0f4;margin:18px 0}
 </section>
 
 
-<!-- 登录后的应用 -->
 <section id="appPage" class="hide">
 
 <div class="nav">
 <button onclick="showPage('home')">比赛中心</button>
-<button id="adminNav" class="green hide" onclick="showPage('admin')">管理员后台</button>
+<button id="adminNav" class="green hide"
+onclick="showPage('admin')">管理员后台</button>
 <button class="alt" onclick="showPage('account')">会员中心</button>
 </div>
 
 
 <!-- 比赛中心 -->
+
 <div id="homePage">
+
 <div class="card">
 <span class="tag">MATCH CENTER</span>
 <h2>比赛中心</h2>
-<p class="small">以下内容来自管理员后台发布。</p>
+<p class="small">管理员后台发布的比赛研究内容。</p>
 
 <div id="matchList">
 <p class="small">正在读取比赛...</p>
 </div>
+
 </div>
 </div>
 
 
-<!-- 管理员后台 -->
+<!-- 管理后台 -->
+
 <div id="adminPage" class="hide">
 
 <div class="card">
 <span class="tag admin">ADMIN</span>
 <h2>管理员后台</h2>
-<p class="small">新增比赛及研究报告。发布后会员端自动同步。</p>
+<p class="small">
+新增、编辑、发布、下架及删除比赛研究报告。
+</p>
 </div>
 
 
 <div class="card">
+
+<div id="editNotice" class="editing hide">
+当前正在编辑已有比赛。
+</div>
+
 <h3>① 比赛资料</h3>
 
-<input id="league" placeholder="联赛 / 赛事，例如：英超">
+<input id="league"
+placeholder="联赛 / 赛事，例如：英超">
 
 <div class="row">
 <input id="homeTeam" placeholder="主队">
@@ -153,54 +172,98 @@ hr{border:0;border-top:1px solid #edf0f4;margin:18px 0}
 
 <h3>② 模型报告</h3>
 
-<input id="reportTitle" placeholder="报告标题（可选）">
+<input id="reportTitle"
+placeholder="报告标题（可选）">
 
 <textarea id="summary"
-placeholder="比赛摘要，例如：双方近期定位、状态及主要背景"></textarea>
+placeholder="比赛摘要"></textarea>
 
 <div class="row">
-<input id="theoreticalHandicap" placeholder="理论让步">
-<input id="marketHandicap" placeholder="市场让步">
+<input id="theoreticalHandicap"
+placeholder="理论让步">
+
+<input id="marketHandicap"
+placeholder="市场让步">
 </div>
 
 <div class="row">
-<input id="tpi" type="number" step="0.01" placeholder="TPI">
-<input id="scoreRange" placeholder="比分区间">
+<input id="tpi"
+type="number"
+step="0.01"
+placeholder="TPI">
+
+<input id="scoreRange"
+placeholder="比分区间">
 </div>
 
 <textarea id="analysis"
 placeholder="完整比赛研究内容"></textarea>
 
 <label class="small">报告权限</label>
+
 <select id="accessLevel">
 <option value="vip">VIP会员</option>
 <option value="free">免费公开</option>
 </select>
 
+
+<div id="newButtons" class="row">
+
+<button class="alt"
+onclick="saveMatch(false)">
+保存草稿
+</button>
+
+<button onclick="saveMatch(true)">
+发布报告
+</button>
+
+</div>
+
+
+<div id="editButtons" class="hide">
+
 <div class="row">
-<button class="alt" onclick="saveMatch(false)">保存草稿</button>
-<button onclick="saveMatch(true)">发布报告</button>
+
+<button class="alt"
+onclick="cancelEdit()">
+取消编辑
+</button>
+
+<button onclick="updateMatch()">
+保存修改
+</button>
+
+</div>
+
 </div>
 
 <div id="adminMsg" class="status"></div>
+
 </div>
 
 
 <div class="card">
+
 <h3>③ 已创建比赛</h3>
+
 <div id="adminMatchList">
 <p class="small">正在读取...</p>
 </div>
+
 </div>
 
 </div>
 
 
 <!-- 会员中心 -->
+
 <div id="accountPage" class="hide">
+
 <div class="card">
 
 <span id="memberBadge" class="tag">MEMBER</span>
+
 <h2>会员中心</h2>
 
 <div class="userbox">
@@ -208,18 +271,26 @@ placeholder="完整比赛研究内容"></textarea>
 <strong id="userEmail">-</strong>
 </div>
 
-<p>会员状态：<strong id="memberStatus">读取中...</strong></p>
+<p>
+会员状态：
+<strong id="memberStatus">读取中...</strong>
+</p>
+
 <p id="expireText" class="small"></p>
 
-<button class="alt" onclick="logout()">退出登录</button>
+<button class="alt"
+onclick="logout()">
+退出登录
+</button>
 
 </div>
 </div>
 
 </section>
 
+
 <div class="bottom">
-AI Football Data Lab · Cloud Management v0.3
+AI Football Data Lab · Cloud Management v0.3.1
 </div>
 
 </div>
@@ -234,14 +305,26 @@ const SUPABASE_KEY =
 "sb_publishable_rKDo5BVwSlIkUw1cZniIMQ_I38umzbb";
 
 const client =
-window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+window.supabase.createClient(
+SUPABASE_URL,
+SUPABASE_KEY
+);
 
 let registerMode=false;
 let currentUser=null;
 let currentProfile=null;
 
+/*
+IMPORTANT:
+matches.id 使用 UUID。
+因此所有管理操作都通过 JS 事件绑定，
+不再把 UUID 直接写进 onclick。
+*/
 
-/* ---------- 登录 ---------- */
+let editingMatchId=null;
+
+
+/* ---------------- 登录 ---------------- */
 
 function switchAuth(){
 
@@ -254,7 +337,9 @@ document.getElementById("authBtn").innerText=
 registerMode?"注册":"登录";
 
 document.getElementById("switchText").innerText=
-registerMode?"已有账号？返回登录":"没有账号？注册账号";
+registerMode
+?"已有账号？返回登录"
+:"没有账号？注册账号";
 
 document.getElementById("authMsg").className="status";
 }
@@ -263,6 +348,7 @@ document.getElementById("authMsg").className="status";
 function authMessage(text,type){
 
 const box=document.getElementById("authMsg");
+
 box.innerText=text;
 box.className="status "+type;
 }
@@ -270,28 +356,52 @@ box.className="status "+type;
 
 async function handleAuth(){
 
-const email=document.getElementById("email").value.trim();
-const password=document.getElementById("password").value;
+const email=
+document.getElementById("email").value.trim();
+
+const password=
+document.getElementById("password").value;
 
 if(!email){
-authMessage("请输入邮箱。","error");return;
+
+authMessage("请输入邮箱。","error");
+return;
+
 }
 
 if(password.length<6){
-authMessage("密码至少6位。","error");return;
+
+authMessage("密码至少6位。","error");
+return;
+
 }
+
 
 if(registerMode){
 
-const {data,error}=await client.auth.signUp({email,password});
+const {data,error}=
+await client.auth.signUp({
+email,
+password
+});
 
 if(error){
-authMessage("注册失败："+error.message,"error");
+
+authMessage(
+"注册失败："+error.message,
+"error"
+);
+
 return;
 }
 
 if(!data.session){
-authMessage("注册成功，请前往邮箱完成验证。","success");
+
+authMessage(
+"注册成功，请前往邮箱完成验证。",
+"success"
+);
+
 return;
 }
 
@@ -300,177 +410,310 @@ await enterApp(data.user);
 }else{
 
 const {data,error}=
-await client.auth.signInWithPassword({email,password});
+await client.auth.signInWithPassword({
+email,
+password
+});
 
 if(error){
-authMessage("登录失败："+error.message,"error");
+
+authMessage(
+"登录失败："+error.message,
+"error"
+);
+
 return;
 }
 
 await enterApp(data.user);
+
 }
+
 }
 
 
-/* ---------- 进入应用 ---------- */
+/* ---------------- APP ---------------- */
 
 async function enterApp(user){
 
 currentUser=user;
 
-document.getElementById("authPage").classList.add("hide");
-document.getElementById("appPage").classList.remove("hide");
+document
+.getElementById("authPage")
+.classList.add("hide");
 
-document.getElementById("userEmail").innerText=user.email||"-";
+document
+.getElementById("appPage")
+.classList.remove("hide");
+
+document.getElementById("userEmail").innerText=
+user.email||"-";
 
 await loadProfile();
 
 showPage("home");
 
 await loadMatches();
+
 }
 
+
+/* ---------------- PROFILE ---------------- */
 
 async function loadProfile(){
 
 const {data,error}=
 await client
 .from("profiles")
-.select("id,email,role,membership_level,membership_expires_at")
+.select(
+"id,email,role,membership_level,membership_expires_at"
+)
 .eq("id",currentUser.id)
 .maybeSingle();
 
+
 if(error){
 
-document.getElementById("memberStatus").innerText=
-"资料读取失败";
+document.getElementById("memberStatus")
+.innerText="资料读取失败";
 
 return;
 }
 
 currentProfile=data;
 
+
 if(!data){
 
-document.getElementById("memberStatus").innerText=
-"普通会员";
+document.getElementById("memberStatus")
+.innerText="普通会员";
 
 return;
 }
 
-const role=String(data.role||"user").toLowerCase();
-const level=String(data.membership_level||"free").toLowerCase();
+
+const role=
+String(data.role||"user").toLowerCase();
+
+const level=
+String(data.membership_level||"free").toLowerCase();
+
 
 if(role==="admin"){
 
-document.getElementById("memberStatus").innerText="管理员";
-document.getElementById("memberBadge").innerText="ADMIN";
-document.getElementById("memberBadge").className="tag admin";
-document.getElementById("adminNav").classList.remove("hide");
+document.getElementById("memberStatus")
+.innerText="管理员";
 
-document.getElementById("expireText").innerText=
-"管理员账号 · 完整管理权限";
+document.getElementById("memberBadge")
+.innerText="ADMIN";
+
+document.getElementById("memberBadge")
+.className="tag admin";
+
+document.getElementById("adminNav")
+.classList.remove("hide");
+
+document.getElementById("expireText")
+.innerText="管理员账号 · 完整管理权限";
 
 return;
+
 }
 
-const expires=data.membership_expires_at
-?new Date(data.membership_expires_at):null;
+
+const expires=
+data.membership_expires_at
+?new Date(data.membership_expires_at)
+:null;
 
 const active=
-level==="vip"&&(!expires||expires>new Date());
+level==="vip" &&
+(!expires || expires>new Date());
+
 
 if(active){
 
-document.getElementById("memberStatus").innerText="VIP会员";
-document.getElementById("memberBadge").innerText="VIP";
-document.getElementById("memberBadge").className="tag vip";
+document.getElementById("memberStatus")
+.innerText="VIP会员";
 
-document.getElementById("expireText").innerText=
+document.getElementById("memberBadge")
+.innerText="VIP";
+
+document.getElementById("memberBadge")
+.className="tag vip";
+
+document.getElementById("expireText")
+.innerText=
 expires
 ?"有效期至："+expires.toLocaleString()
 :"VIP会员 · 长期有效";
 
 }else{
 
-document.getElementById("memberStatus").innerText="普通会员";
-document.getElementById("expireText").innerText="基础会员账号";
+document.getElementById("memberStatus")
+.innerText="普通会员";
+
+document.getElementById("expireText")
+.innerText="基础会员账号";
+
 }
+
 }
 
 
-/* ---------- 页面切换 ---------- */
+/* ---------------- 页面 ---------------- */
 
 function showPage(page){
 
-["homePage","adminPage","accountPage"].forEach(id=>{
-document.getElementById(id).classList.add("hide");
+[
+"homePage",
+"adminPage",
+"accountPage"
+].forEach(id=>{
+
+document
+.getElementById(id)
+.classList.add("hide");
+
 });
 
+
 if(page==="home"){
-document.getElementById("homePage").classList.remove("hide");
+
+document
+.getElementById("homePage")
+.classList.remove("hide");
+
 loadMatches();
+
 }
 
+
 if(page==="account"){
-document.getElementById("accountPage").classList.remove("hide");
+
+document
+.getElementById("accountPage")
+.classList.remove("hide");
+
 }
+
 
 if(page==="admin"){
 
-if(!currentProfile||
-String(currentProfile.role).toLowerCase()!=="admin"){
+if(
+!currentProfile ||
+String(currentProfile.role).toLowerCase()!=="admin"
+){
+
 alert("没有管理员权限。");
 return;
+
 }
 
-document.getElementById("adminPage").classList.remove("hide");
+document
+.getElementById("adminPage")
+.classList.remove("hide");
+
 loadAdminMatches();
+
 }
+
 }
 
 
-/* ---------- 新增比赛 ---------- */
+/* ---------------- 管理提示 ---------------- */
 
 function adminMessage(text,type){
 
-const box=document.getElementById("adminMsg");
+const box=
+document.getElementById("adminMsg");
+
 box.innerText=text;
 box.className="status "+type;
+
 }
 
+
+/* ---------------- 新增比赛 ---------------- */
 
 async function saveMatch(publish){
 
-if(!currentProfile||
-String(currentProfile.role).toLowerCase()!=="admin"){
-adminMessage("没有管理员权限。","error");
+if(
+!currentProfile ||
+String(currentProfile.role).toLowerCase()!=="admin"
+){
+
+adminMessage(
+"没有管理员权限。",
+"error"
+);
+
 return;
+
 }
 
-const league=document.getElementById("league").value.trim();
-const home=document.getElementById("homeTeam").value.trim();
-const away=document.getElementById("awayTeam").value.trim();
-const kickoff=document.getElementById("kickoff").value;
 
-if(!league||!home||!away||!kickoff){
-adminMessage("请填写赛事、主队、客队和开赛时间。","error");
+const league=
+document.getElementById("league")
+.value.trim();
+
+const home=
+document.getElementById("homeTeam")
+.value.trim();
+
+const away=
+document.getElementById("awayTeam")
+.value.trim();
+
+const kickoff=
+document.getElementById("kickoff")
+.value;
+
+
+if(
+!league ||
+!home ||
+!away ||
+!kickoff
+){
+
+adminMessage(
+"请填写赛事、主队、客队和开赛时间。",
+"error"
+);
+
 return;
+
 }
 
 
-/* 创建比赛 */
+adminMessage(
+"正在保存...",
+"success"
+);
 
-const {data:match,error:matchError}=
+
+const {
+data:match,
+error:matchError
+}=
 await client
 .from("matches")
 .insert({
+
 league:league,
+
 home_team:home,
+
 away_team:away,
-kickoff_at:new Date(kickoff).toISOString(),
+
+kickoff_at:
+new Date(kickoff).toISOString(),
+
 status:"scheduled",
+
 is_published:publish
+
 })
 .select()
 .single();
@@ -484,37 +727,60 @@ adminMessage(
 );
 
 return;
+
 }
 
 
-/* 创建报告 */
+const tpiInput=
+document.getElementById("tpi").value;
 
-const tpiValue=document.getElementById("tpi").value;
 
 const {error:reportError}=
 await client
 .from("reports")
 .insert({
+
 match_id:match.id,
-title:document.getElementById("reportTitle").value.trim(),
-summary:document.getElementById("summary").value.trim(),
-analysis:document.getElementById("analysis").value.trim(),
+
+title:
+document.getElementById("reportTitle")
+.value.trim(),
+
+summary:
+document.getElementById("summary")
+.value.trim(),
+
+analysis:
+document.getElementById("analysis")
+.value.trim(),
+
 theoretical_handicap:
-document.getElementById("theoreticalHandicap").value.trim(),
+document.getElementById("theoreticalHandicap")
+.value.trim(),
+
 market_handicap:
-document.getElementById("marketHandicap").value.trim(),
-tpi:tpiValue===""?null:Number(tpiValue),
+document.getElementById("marketHandicap")
+.value.trim(),
+
+tpi:
+tpiInput===""
+?null
+:Number(tpiInput),
+
 score_range:
-document.getElementById("scoreRange").value.trim(),
+document.getElementById("scoreRange")
+.value.trim(),
+
 access_level:
-document.getElementById("accessLevel").value,
+document.getElementById("accessLevel")
+.value,
+
 is_published:publish
+
 });
 
 
 if(reportError){
-
-/* 如果报告失败，删除刚创建的比赛，避免留下半条数据 */
 
 await client
 .from("matches")
@@ -527,11 +793,14 @@ adminMessage(
 );
 
 return;
+
 }
 
 
 adminMessage(
-publish?"发布成功。":"草稿保存成功。",
+publish
+?"发布成功。"
+:"草稿保存成功。",
 "success"
 );
 
@@ -539,387 +808,823 @@ clearForm();
 
 await loadAdminMatches();
 await loadMatches();
+
 }
 
+
+/* ---------------- 表单清空 ---------------- */
 
 function clearForm(){
 
 [
-"league","homeTeam","awayTeam","kickoff",
-"reportTitle","summary","theoreticalHandicap",
-"marketHandicap","tpi","scoreRange","analysis"
-].forEach(id=>{
+"league",
+"homeTeam",
+"awayTeam",
+"kickoff",
+"reportTitle",
+"summary",
+"theoreticalHandicap",
+"marketHandicap",
+"tpi",
+"scoreRange",
+"analysis"
+]
+.forEach(id=>{
+
 document.getElementById(id).value="";
+
 });
 
-document.getElementById("accessLevel").value="vip";
+document.getElementById("accessLevel")
+.value="vip";
+
 }
 
 
-/* ---------- 管理员比赛列表 ---------- */
+/* ---------------- 管理员比赛列表 ---------------- */
 
 async function loadAdminMatches(){
 
-const box=document.getElementById("adminMatchList");
+const box=
+document.getElementById("adminMatchList");
 
-box.innerHTML='<p class="small">正在读取...</p>';
+box.innerHTML=
+'<p class="small">正在读取...</p>';
+
 
 const {data,error}=
 await client
 .from("matches")
 .select("*")
-.order("kickoff_at",{ascending:false})
-.limit(30);
+.order(
+"kickoff_at",
+{ascending:false}
+)
+.limit(50);
+
 
 if(error){
 
 box.innerHTML=
-'<p class="small">读取失败：'+escapeHtml(error.message)+'</p>';
+'<p class="small">读取失败：'
++escapeHtml(error.message)
++'</p>';
 
 return;
+
 }
 
-if(!data||data.length===0){
 
-box.innerHTML='<p class="small">暂时还没有比赛。</p>';
+if(!data || data.length===0){
+
+box.innerHTML=
+'<p class="small">暂时还没有比赛。</p>';
+
 return;
+
 }
+
 
 box.innerHTML="";
 
-for(const m of data){
 
-const div=document.createElement("div");
+data.forEach(m=>{
+
+const div=
+document.createElement("div");
+
 div.className="match";
 
-div.innerHTML=`
-<span class="tag ${m.is_published?"admin":"draft"}">
-${m.is_published?"已发布":"草稿"}
-</span>
 
-<h3>${escapeHtml(m.home_team)} vs ${escapeHtml(m.away_team)}</h3>
+const state=
+document.createElement("span");
 
-<p class="small">
-${escapeHtml(m.league||"")}
-<br>
-${formatTime(m.kickoff_at)}
-</p>
+state.className=
+"tag "+
+(m.is_published
+?"admin"
+:"draft");
 
-<div class="row">
-<button class="alt" onclick="togglePublish(${m.id},${!m.is_published})">
-${m.is_published?"下架":"发布"}
-</button>
+state.innerText=
+m.is_published
+?"已发布"
+:"草稿";
 
-<button class="danger" onclick="deleteMatch(${m.id})">
-删除
-</button>
-</div>
-`;
+
+const title=
+document.createElement("h3");
+
+title.innerText=
+(m.home_team||"")
++" vs "+
+(m.away_team||"");
+
+
+const info=
+document.createElement("p");
+
+info.className="small";
+
+info.innerHTML=
+escapeHtml(m.league||"")
++"<br>"
++formatTime(m.kickoff_at);
+
+
+const editButton=
+document.createElement("button");
+
+editButton.className="alt";
+editButton.innerText="编辑";
+
+editButton.addEventListener(
+"click",
+()=>startEdit(m.id)
+);
+
+
+const publishButton=
+document.createElement("button");
+
+publishButton.className=
+m.is_published
+?"alt"
+:"green";
+
+publishButton.innerText=
+m.is_published
+?"下架"
+:"发布";
+
+
+publishButton.addEventListener(
+"click",
+()=>togglePublish(
+m.id,
+!m.is_published
+)
+);
+
+
+const deleteButton=
+document.createElement("button");
+
+deleteButton.className="danger";
+deleteButton.innerText="删除";
+
+deleteButton.addEventListener(
+"click",
+()=>deleteMatch(m.id)
+);
+
+
+const firstRow=
+document.createElement("div");
+
+firstRow.className="row";
+
+firstRow.appendChild(
+editButton
+);
+
+firstRow.appendChild(
+publishButton
+);
+
+
+div.appendChild(state);
+div.appendChild(title);
+div.appendChild(info);
+div.appendChild(firstRow);
+div.appendChild(deleteButton);
 
 box.appendChild(div);
+
+});
+
 }
-}
 
 
-async function togglePublish(id,publish){
+/* ---------------- 发布 / 下架 ---------------- */
 
-if(!confirm(publish?"确认发布这场比赛？":"确认下架这场比赛？")){
+async function togglePublish(
+id,
+publish
+){
+
+const action=
+publish?"发布":"下架";
+
+
+if(
+!confirm(
+"确认"+action+"这场比赛？"
+)
+){
+
 return;
+
 }
 
-const {error:e1}=
+
+const {error:matchError}=
 await client
 .from("matches")
 .update({
+
 is_published:publish,
-updated_at:new Date().toISOString()
+
+updated_at:
+new Date().toISOString()
+
 })
 .eq("id",id);
 
-if(e1){
-alert("操作失败："+e1.message);
+
+if(matchError){
+
+alert(
+"比赛"+action+"失败："
++matchError.message
+);
+
 return;
+
 }
 
-const {error:e2}=
+
+const {error:reportError}=
 await client
 .from("reports")
 .update({
+
 is_published:publish,
-updated_at:new Date().toISOString()
+
+updated_at:
+new Date().toISOString()
+
 })
 .eq("match_id",id);
 
-if(e2){
-alert("报告状态更新失败："+e2.message);
+
+if(reportError){
+
+/*
+如果报告状态修改失败，
+把比赛恢复到原来的状态，
+避免比赛与报告发布状态不一致。
+*/
+
+await client
+.from("matches")
+.update({
+
+is_published:!publish,
+
+updated_at:
+new Date().toISOString()
+
+})
+.eq("id",id);
+
+
+alert(
+"报告"+action+"失败："
++reportError.message
+);
+
 return;
+
 }
+
+
+adminMessage(
+action+"成功。",
+"success"
+);
 
 await loadAdminMatches();
 await loadMatches();
+
 }
 
+
+/* ---------------- 删除 ---------------- */
 
 async function deleteMatch(id){
 
-if(!confirm("确认删除？比赛及对应报告都会删除。")){
+if(
+!confirm(
+"确认删除？比赛及对应报告都会删除。"
+)
+){
+
 return;
+
 }
 
-const {error}=
+
+/*
+先删除报告。
+这样即使旧数据库外键没有配置
+ON DELETE CASCADE，
+也可以正常删除。
+*/
+
+const {error:reportError}=
+await client
+.from("reports")
+.delete()
+.eq("match_id",id);
+
+
+if(reportError){
+
+alert(
+"删除报告失败："
++reportError.message
+);
+
+return;
+
+}
+
+
+const {error:matchError}=
 await client
 .from("matches")
 .delete()
 .eq("id",id);
 
-if(error){
-alert("删除失败："+error.message);
+
+if(matchError){
+
+alert(
+"删除比赛失败："
++matchError.message
+);
+
 return;
+
 }
+
+
+if(editingMatchId===id){
+
+cancelEdit();
+
+}
+
+
+adminMessage(
+"删除成功。",
+"success"
+);
 
 await loadAdminMatches();
 await loadMatches();
+
 }
 
 
-/* ---------- 用户比赛中心 ---------- */
+/* ---------------- 开始编辑 ---------------- */
+
+async function startEdit(id){
+
+const {
+data:match,
+error:matchError
+}=
+await client
+.from("matches")
+.select("*")
+.eq("id",id)
+.single();
+
+
+if(matchError){
+
+alert(
+"比赛读取失败："
++matchError.message
+);
+
+return;
+
+}
+
+
+const {
+data:report,
+error:reportError
+}=
+await client
+.from("reports")
+.select("*")
+.eq("match_id",id)
+.maybeSingle();
+
+
+if(reportError){
+
+alert(
+"报告读取失败："
++reportError.message
+);
+
+return;
+
+}
+
+
+editingMatchId=id;
+
+
+document.getElementById("league")
+.value=
+match.league||match.competition||"";
+
+document.getElementById("homeTeam")
+.value=
+match.home_team||"";
+
+document.getElementById("awayTeam")
+.value=
+match.away_team||"";
+
+document.getElementById("kickoff")
+.value=
+toDateTimeLocal(match.kickoff_at);
+
+
+if(report){
+
+document.getElementById("reportTitle")
+.value=
+report.title||"";
+
+document.getElementById("summary")
+.value=
+report.summary||"";
+
+document.getElementById("theoreticalHandicap")
+.value=
+report.theoretical_handicap||"";
+
+document.getElementById("marketHandicap")
+.value=
+report.market_handicap||"";
+
+document.getElementById("tpi")
+.value=
+report.tpi ?? "";
+
+document.getElementById("scoreRange")
+.value=
+report.score_range||"";
+
+document.getElementById("analysis")
+.value=
+report.analysis||"";
+
+document.getElementById("accessLevel")
+.value=
+report.access_level||"vip";
+
+}
+
+
+document.getElementById("editNotice")
+.classList.remove("hide");
+
+document.getElementById("newButtons")
+.classList.add("hide");
+
+document.getElementById("editButtons")
+.classList.remove("hide");
+
+
+adminMessage(
+"正在编辑："+
+(match.home_team||"")
++" vs "+
+(match.away_team||""),
+"success"
+);
+
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+
+}
+
+
+/* ---------------- 保存编辑 ---------------- */
+
+async function updateMatch(){
+
+if(!editingMatchId){
+
+adminMessage(
+"没有正在编辑的比赛。",
+"error"
+);
+
+return;
+
+}
+
+
+const league=
+document.getElementById("league")
+.value.trim();
+
+const home=
+document.getElementById("homeTeam")
+.value.trim();
+
+const away=
+document.getElementById("awayTeam")
+.value.trim();
+
+const kickoff=
+document.getElementById("kickoff")
+.value;
+
+
+if(
+!league ||
+!home ||
+!away ||
+!kickoff
+){
+
+adminMessage(
+"赛事、主队、客队和开赛时间不能为空。",
+"error"
+);
+
+return;
+
+}
+
+
+const {error:matchError}=
+await client
+.from("matches")
+.update({
+
+league:league,
+
+home_team:home,
+
+away_team:away,
+
+kickoff_at:
+new Date(kickoff).toISOString(),
+
+updated_at:
+new Date().toISOString()
+
+})
+.eq("id",editingMatchId);
+
+
+if(matchError){
+
+adminMessage(
+"比赛修改失败："
++matchError.message,
+"error"
+);
+
+return;
+
+}
+
+
+const tpiInput=
+document.getElementById("tpi").value;
+
+
+const reportData={
+
+match_id:editingMatchId,
+
+title:
+document.getElementById("reportTitle")
+.value.trim(),
+
+summary:
+document.getElementById("summary")
+.value.trim(),
+
+analysis:
+document.getElementById("analysis")
+.value.trim(),
+
+theoretical_handicap:
+document.getElementById("theoreticalHandicap")
+.value.trim(),
+
+market_handicap:
+document.getElementById("marketHandicap")
+.value.trim(),
+
+tpi:
+tpiInput===""
+?null
+:Number(tpiInput),
+
+score_range:
+document.getElementById("scoreRange")
+.value.trim(),
+
+access_level:
+document.getElementById("accessLevel")
+.value,
+
+updated_at:
+new Date().toISOString()
+
+};
+
+
+const {
+data:existingReport,
+error:checkError
+}=
+await client
+.from("reports")
+.select("id,is_published")
+.eq("match_id",editingMatchId)
+.maybeSingle();
+
+
+if(checkError){
+
+adminMessage(
+"报告检查失败："
++checkError.message,
+"error"
+);
+
+return;
+
+}
+
+
+if(existingReport){
+
+const {error}=
+await client
+.from("reports")
+.update(reportData)
+.eq("match_id",editingMatchId);
+
+
+if(error){
+
+adminMessage(
+"报告修改失败："
++error.message,
+"error"
+);
+
+return;
+
+}
+
+}else{
+
+const {error}=
+await client
+.from("reports")
+.insert({
+
+...reportData,
+
+is_published:false
+
+});
+
+
+if(error){
+
+adminMessage(
+"报告创建失败："
++error.message,
+"error"
+);
+
+return;
+
+}
+
+}
+
+
+cancelEdit(false);
+
+adminMessage(
+"修改保存成功。",
+"success"
+);
+
+await loadAdminMatches();
+await loadMatches();
+
+}
+
+
+/* ---------------- 取消编辑 ---------------- */
+
+function cancelEdit(clearMessage=true){
+
+editingMatchId=null;
+
+clearForm();
+
+document.getElementById("editNotice")
+.classList.add("hide");
+
+document.getElementById("newButtons")
+.classList.remove("hide");
+
+document.getElementById("editButtons")
+.classList.add("hide");
+
+if(clearMessage){
+
+document.getElementById("adminMsg")
+.className="status";
+
+}
+
+}
+
+
+/* ---------------- 前台比赛 ---------------- */
 
 async function loadMatches(){
 
-const box=document.getElementById("matchList");
+const box=
+document.getElementById("matchList");
 
-box.innerHTML='<p class="small">正在读取比赛...</p>';
+box.innerHTML=
+'<p class="small">正在读取比赛...</p>';
+
 
 const {data,error}=
 await client
 .from("matches")
-.select(`
-id,
-league,
-kickoff_at,
-home_team,
-away_team,
-reports(
-id,
-title,
-summary,
-analysis,
-theoretical_handicap,
-market_handicap,
-tpi,
-score_range,
-access_level,
-is_published
-)
-`)
+.select("*")
 .eq("is_published",true)
-.order("kickoff_at",{ascending:true});
+.order(
+"kickoff_at",
+{ascending:true}
+);
+
 
 if(error){
 
 box.innerHTML=
-'<p class="small">比赛读取失败：'+escapeHtml(error.message)+'</p>';
+'<p class="small">比赛读取失败：'
++escapeHtml(error.message)
++'</p>';
 
 return;
+
 }
 
-if(!data||data.length===0){
+
+if(!data || data.length===0){
 
 box.innerHTML=
 '<p class="small">目前暂无已发布比赛。</p>';
 
 return;
+
 }
+
 
 box.innerHTML="";
 
-data.forEach(match=>{
 
-const report=
-Array.isArray(match.reports)
-?match.reports[0]
-:match.reports;
+for(const match of data){
 
-const div=document.createElement("div");
-div.className="match";
+/*
+这里只请求当前用户有权限读取的报告。
+VIP权限由 Supabase RLS 控制，
+不是靠前端隐藏。
+*/
 
-let access="VIP";
-
-if(report&&report.access_level==="free"){
-access="免费";
-}
-
-div.innerHTML=`
-<span class="tag ${access==="VIP"?"vip":""}">
-${access}
-</span>
-
-<h3>
-${escapeHtml(match.home_team)}
-vs
-${escapeHtml(match.away_team)}
-</h3>
-
-<p class="small">
-${escapeHtml(match.league||"")}
-<br>
-${formatTime(match.kickoff_at)}
-</p>
-
-${report&&report.summary
-?'<p>'+escapeHtml(report.summary)+'</p>'
-:""}
-
-<button onclick="openReport(${match.id})">
-查看研究报告
-</button>
-
-<div id="report-${match.id}" class="hide"></div>
-`;
-
-box.appendChild(div);
-});
-}
-
-
-/* ---------- 打开报告 ---------- */
-
-async function openReport(matchId){
-
-const {data,error}=
+const {
+data:report
+}=
 await client
 .from("reports")
-.select("*")
-.eq("match_id",matchId)
-.eq("is_published",true)
-.maybeSingle();
-
-if(error){
-
-alert("当前账号没有权限读取该报告，或读取失败："+error.message);
-return;
-}
-
-if(!data){
-
-alert("该报告暂未开放，或当前会员权限不足。");
-return;
-}
-
-const box=document.getElementById("report-"+matchId);
-
-if(!box)return;
-
-if(!box.classList.contains("hide")){
-box.classList.add("hide");
-return;
-}
-
-box.innerHTML=`
-
-<div class="report">
-
-${data.title
-?'<strong>'+escapeHtml(data.title)+'</strong><br><br>'
-:""}
-
-${data.theoretical_handicap
-?'<b>理论让步：</b>'+escapeHtml(data.theoretical_handicap)+'<br>'
-:""}
-
-${data.market_handicap
-?'<b>市场让步：</b>'+escapeHtml(data.market_handicap)+'<br>'
-:""}
-
-${data.tpi!==null
-?'<b>TPI：</b>'+escapeHtml(String(data.tpi))+'<br>'
-:""}
-
-${data.score_range
-?'<b>比分区间：</b>'+escapeHtml(data.score_range)+'<br><br>'
-:""}
-
-${escapeHtml(data.analysis||data.summary||"暂无详细内容")}
-
-</div>
-`;
-
-box.classList.remove("hide");
-}
-
-
-/* ---------- 工具 ---------- */
-
-function escapeHtml(value){
-
-return String(value??"")
-.replaceAll("&","&amp;")
-.replaceAll("<","&lt;")
-.replaceAll(">","&gt;")
-.replaceAll('"',"&quot;")
-.replaceAll("'","&#039;");
-}
-
-
-function formatTime(value){
-
-if(!value)return "时间待定";
-
-const d=new Date(value);
-
-return d.toLocaleString("zh-CN",{
-year:"numeric",
-month:"2-digit",
-day:"2-digit",
-hour:"2-digit",
-minute:"2-digit"
-});
-}
-
-
-/* ---------- 退出 ---------- */
-
-async function logout(){
-
-await client.auth.signOut();
-
-currentUser=null;
-currentProfile=null;
-
-document.getElementById("appPage").classList.add("hide");
-document.getElementById("authPage").classList.remove("hide");
-
-document.getElementById("password").value="";
-}
-
-
-/* ---------- 自动恢复登录 ---------- */
-
-async function init(){
-
-const {data,error}=
-await client.auth.getSession();
-
-if(!error&&data.session){
-await enterApp(data.session.user);
-}
-}
-
-
-client.auth.onAuthStateChange((event)=>{
-if(event==="SIGNED_OUT"){
-
-currentUser=null;
-currentProfile=null;
-
-document.getElementById("appPage").classList.add("hide");
-document.getElementById("authPage").classList.remove("hide");
-}
-});
-
-
-init();
-
-</script>
-</body>
-</html>
+.select(
+"id,title,summary,access
